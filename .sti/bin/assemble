@@ -18,11 +18,11 @@ set -e
 # Link the modules
 #npm link $module_list
 
+chown -R $(whoami) /opt/rh/nodejs010/root/usr/lib/node_modules
 echo "---> Installing application source"
 cp -Rf /tmp/src/. ./
 chgrp -R 0 ./
 chmod -R g+rw ./
 
 echo "---> Building your Node application from source"
-chown -R $(whoami) /opt/rh/nodejs010/root/usr/lib/node_modules
 npm install -d

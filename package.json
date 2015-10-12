@@ -4,11 +4,12 @@
   "description": "Process to pull data from cubesensors api and put to a influx db backend",
   "main": "sensor1.js",
   "dependencies": {
+    "es6-promise": "^3.0.2",
+    "influent": "^0.4.0",
     "oauth": "^0.9.14",
-    "request-debug": "^0.2.0",
-    "request": "^2.64.0",
     "querystring": "^0.2.0",
-    "influent": "^0.4.0"
+    "request": "^2.64.0",
+    "request-debug": "^0.2.0"
   },
   "devDependencies": {},
   "scripts": {

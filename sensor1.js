@@ -1,12 +1,13 @@
+require('es6-promise').polyfill();
 var OAuth = require('oauth');
 var qs = require('querystring');
 var request = require("request");
 var querystring = require('querystring');
 //require('request-debug')(request);
-var EventEmitter = require('events');
+var events = require('events');
 var influent = require('influent');
 
-var ee = new EventEmitter();
+var ee = new events.EventEmitter();
 
 var oauth = new OAuth.OAuth(
     'http://api.cubesensors.com/auth/request_token',

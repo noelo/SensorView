@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cat /usr/local/sti/*
+
 # Prevent running assemble in builders different than official STI image.
 # The official nodejs:0.10-onbuild already run npm install and use different
 # application folder.

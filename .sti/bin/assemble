@@ -18,7 +18,7 @@ set -e
 # Link the modules
 #npm link $module_list
 
-chown -R $(whoami) /opt/rh/nodejs010/root/usr/lib/node_modules
+#chown -R $(whoami) /opt/rh/nodejs010/root/usr/lib/node_modules
 echo "---> Installing application source"
 cp -Rf /tmp/src/. ./
 chgrp -R 0 ./

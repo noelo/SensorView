@@ -7,21 +7,13 @@
 
 set -e
 
-# FIXME: Linking of global modules is disabled for now as it causes npm failures
-#        under RHEL7
-# Global modules good to have
-# npmgl=$(grep "^\s*[^#\s]" ../etc/npm_global_module_list | sort -u)
-# Available global modules; only match top-level npm packages
-#global_modules=$(npm ls -g 2> /dev/null | perl -ne 'print "$1\n" if /^\S+\s(\S+)\@[\d\.-]+/' | sort -u)
-# List all modules in common
-#module_list=$(/usr/bin/comm -12 <(echo "${global_modules}") | tr '\n' ' ')
-# Link the modules
-#npm link $module_list
-cat /usr/local/sti/*
+if [ "$1" = "-h" ]; then
+  exec /usr/local/sti/usage
+fi
+
+
 echo "---> Installing application source"
 cp -Rf /tmp/src/. ./
-chgrp -R 0 ./
-chmod -R g+rw ./
 
 echo "---> Building your Node application from source"
 npm install -d

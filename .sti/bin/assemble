@@ -14,7 +14,7 @@ fi
 
 echo "---> Installing application source"
 cp -Rf /tmp/src/. ./
-chown -R $(whoami) /opt/rh/nodejs010/root/usr/lib/node_modules
+#chown -R $(whoami) /opt/rh/nodejs010/root/usr/lib/node_modules
 
 echo "---> Building your Node application from source"
 npm install -d

@@ -17,7 +17,7 @@ set -e
 #module_list=$(/usr/bin/comm -12 <(echo "${global_modules}") | tr '\n' ' ')
 # Link the modules
 #npm link $module_list
-
+cat /usr/local/sti/*
 echo "---> Installing application source"
 cp -Rf /tmp/src/. ./
 chgrp -R 0 ./

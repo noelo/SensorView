@@ -1,5 +1,5 @@
 {
-  "name": "cubesensors",
+  "name": "SensorView",
   "version": "1.0.0",
   "description": "Process to pull data from cubesensors api and put to a influx db backend",
   "main": "sensor1.js",
@@ -8,12 +8,10 @@
     "influent": "^0.4.0",
     "oauth": "^0.9.14",
     "querystring": "^0.2.0",
-    "request": "^2.64.0",
-    "request-debug": "^0.2.0"
+    "request": "^2.64.0"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node sensor1.js"
   },
   "author": "",

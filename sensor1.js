@@ -2,8 +2,6 @@ require('es6-promise').polyfill();
 var OAuth = require('oauth');
 var qs = require('querystring');
 var request = require("request");
-var querystring = require('querystring');
-//require('request-debug')(request);
 var events = require('events');
 var influent = require('influent');
 

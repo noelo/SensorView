@@ -26,7 +26,7 @@ ee.on("CurrentValue", function (sensorvalue) {
         key: "Sensordata",
         tags: {
             cubeid: sensorvalue.cubeid,
-            cubenname:sensorvalue.cubename
+            cubenname: sensorvalue.cubename
         },
         fields: {
             temp: sensorvalue.temp,
@@ -101,24 +101,34 @@ function getCubeSensorCurrentData() {
     cubeDevices.forEach(function (cube) {
         requrl = "http://api.cubesensors.com/v1/devices/" + cube.cubeid + "/current";
         request.get({
-            url: requrl,
-            oauth: oauth_tokens,
-            qs: qs,
-            json: true
-        }, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                var tmp = {};
-                tmp.field_lists = body.field_list;
-                tmp.out = {};
-                body.results[0].forEach(combineData, tmp);
-                tmp.out.cubeid = cube.cubeid;
-                tmp.out.cubename = cube.cubename;
+                url: requrl,
+                oauth: oauth_tokens,
+                qs: qs,
+                json: true
+            }, function (error, response, body) {
+                if (error) {
+                    console.error(error, response);
+                } else {
+                    switch (response.statusCode) {
+                        case 200:
+                            var tmp = {};
+                            tmp.field_lists = body.field_list;
+                            tmp.out = {};
+                            body.results[0].forEach(combineData, tmp);
+                            tmp.out.cubeid = cube.cubeid;
+                            tmp.out.cubename = cube.cubename;
 
-                ee.emit("CurrentValue", tmp.out);
-            } else {
-                console.error(error, response);
+                            ee.emit("CurrentValue", tmp.out);
+                            break;
+                        case 429:
+                            console.log("Rate limited...");
+                            break;
+                        default:
+                            console.log("Unhandled response code " + response);
+                    }
+                }
             }
-        })
+        )
     });
 }
 
@@ -163,7 +173,7 @@ ee.emit("PrepDB");
 function periodicPull() {
     setInterval(function () {
         getCubeSensorCurrentData()
-    }, 10000);
+    }, 60000);
 }
 
 getCubeSensorInfo();

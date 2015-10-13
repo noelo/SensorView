@@ -11,3 +11,5 @@ oc start-build --from=sensorview-2
 oc start-build --from=sensorview-2-build --follow
 
 oc start-build --from-build=sensorview-2-build --follow
+
+oc tag sensorview@sha256:c011c86e1b8c0be8891e518c43962879980f843114d33f62525026e84d4207bc sensorview:prodready

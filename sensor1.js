@@ -126,7 +126,7 @@ function getCubeSensorInfo() {
                 console.log("CubeName", cube.extra.name);
             })
         } else {
-            console.error(error, response);
+            console.error("getCubeSensorInfo ",error, response);
         }
     });
 }
@@ -142,7 +142,7 @@ function getCubeSensorCurrentData() {
                 json: true
             }, function (error, response, body) {
                 if (error) {
-                    console.error(error, response);
+                    console.error("getCubeSensorCurrentData ",error, response);
                 } else {
                     switch (response.statusCode) {
                         case 200:
@@ -159,7 +159,7 @@ function getCubeSensorCurrentData() {
                             console.log("Rate limited...");
                             break;
                         default:
-                            console.log("Unhandled response code " + response);
+                            console.log("getCubeSensorCurrentData Unhandled response code " + response);
                     }
                 }
             }
@@ -228,13 +228,16 @@ function getWanStats() {
                     if (!err && response.statusCode == 200) {
                         console.log(body)
                         wanData[url.type] = Number(body.substring(0, body.length - 1));
+                    }else{
+                        console.log("getWanStats: An error occurred during GET ", err)
+
                     }
                     callback();
                 }
             )
         }, function done(err) {
             if (err) {
-                console.log("An error occurred ", err)
+                console.log("getWanStats: An error occurred ", err);
             } else {
                 ee.emit("WANStats", wanData);
             }

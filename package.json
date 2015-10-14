@@ -4,6 +4,7 @@
   "description": "Process to pull data from cubesensors api and put to a influx db backend",
   "main": "sensor1.js",
   "dependencies": {
+    "async": "^1.4.2",
     "es6-promise": "^3.0.2",
     "influent": "^0.4.0",
     "oauth": "^0.9.14",

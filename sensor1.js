@@ -4,6 +4,8 @@ var qs = require('querystring');
 var request = require("request");
 var events = require('events');
 var influent = require('influent');
+var async = require("async");
+
 
 var ee = new events.EventEmitter();
 
@@ -18,10 +20,63 @@ var oauth = new OAuth.OAuth(
 );
 
 var dbclient;
-var cubeNames = {};
+var prevWANRecData = 0;
+var prevWANTransData = 0;
+
+ee.on("WANStats", function (WANData) {
+    var toStore = {rec:0,trans:0};
+
+    //Process receive data
+    if (prevWANRecData !== 0) {
+        toStore.rec = WANData.receive - prevWANRecData;
+        toStore.rec = (toStore.rec > 0) ? toStore.rec : 0;
+        prevWANRecData = WANData.receive;
+    }
+    prevWANRecData = WANData.receive;
+
+    //Process transmit data
+    if (prevWANTransData !== 0) {
+        toStore.trans = WANData.transmit- prevWANTransData;
+        toStore.trans = (toStore.trans > 0) ? toStore.trans : 0;
+    }
+    prevWANTransData = WANData.transmit;
+
+    dbclient.writeOne({
+        key: "NetworkData",
+        tags: {
+            router: "WANROUTER"
+        },
+        fields: {
+            receive: toStore.rec,
+            transmit: toStore.trans,
+            source: "WAN"
+        }
+    });
+});
+
+ee.on("WANReceive", function (WANData) {
+    var toStore = 0;
+    if (prevWANRecData !== 0) {
+        toStore = WANData - prevWANRecData;
+        toStore = (toStore > 0) ? toStore : 0;
+        prevWANRecData = WANData;
+    } else {
+        prevWANRecData = WANData;
+    }
+    dbclient.writeOne({
+        key: "NetworkData",
+        tags: {
+            router: "WANROUTER"
+        },
+        fields: {
+            receive: toStore,
+            source: "WAN"
+        }
+    });
+});
 
 ee.on("CurrentValue", function (sensorvalue) {
-    console.log("Writing data");
+    console.log("Writing sensor data");
     dbclient.writeOne({
         key: "Sensordata",
         tags: {
@@ -76,7 +131,7 @@ function combineData(element, index) {
 }
 
 function getCubeSensorInfo() {
-    requrl = "http://api.cubesensors.com/v1/devices/";
+    var requrl = "http://api.cubesensors.com/v1/devices/";
     request.get({
         url: requrl,
         oauth: oauth_tokens,
@@ -99,7 +154,7 @@ function getCubeSensorInfo() {
 
 function getCubeSensorCurrentData() {
     cubeDevices.forEach(function (cube) {
-        requrl = "http://api.cubesensors.com/v1/devices/" + cube.cubeid + "/current";
+        var requrl = "http://api.cubesensors.com/v1/devices/" + cube.cubeid + "/current";
         request.get({
                 url: requrl,
                 oauth: oauth_tokens,
@@ -144,7 +199,7 @@ function getCubeSensorSpanData() {
     params.end = today.toISOString(today).slice(0, -5) + 'Z';
 
     cubeDevices.forEach(function (cube) {
-        requrl = "http://api.cubesensors.com/v1/devices/" + cube.cubeid + "/span";
+        var requrl = "http://api.cubesensors.com/v1/devices/" + cube.cubeid + "/span";
         request.get({
             url: requrl,
             oauth: oauth_tokens,
@@ -170,14 +225,78 @@ function getCubeSensorSpanData() {
 ee.emit("PrepDB");
 
 
-function periodicPull() {
+function getWanReceiveStats() {
+    var reqURL = "http://192.168.1.1/getWanReceive.sh";
+    request.get(reqURL, {
+            'auth': {
+                'user': 'admin',
+                'pass': 'admin',
+                'sendImmediately': true
+            }
+        }, function (err, response, body) {
+            if (!err && response.statusCode == 200) {
+                console.log("Received ", body);
+                ee.emit("WANReceive", Number(body.substring(0, body.length - 1)));
+            }
+        }
+    );
+    console.log("here before resp");
+}
+
+function getWanStats() {
+    var wanData = {};
+    var reqURLs = [
+        {
+            type: "transmit",
+            url: "http://192.168.1.1/getWanTransmit.sh"
+        },
+        {
+            type: "receive",
+            url: "http://192.168.1.1/getWanReceive.sh"
+        }
+    ];
+    async.each(reqURLs,
+        function (url, callback) {
+            request.get(url.url, {
+                    'auth': {
+                        'user': 'admin',
+                        'pass': 'admin',
+                        'sendImmediately': true
+                    }
+                }, function (err, response, body) {
+                    if (!err && response.statusCode == 200) {
+                        console.log(body)
+                        wanData[url.type] = Number(body.substring(0, body.length - 1));
+                    }
+                    callback();
+                }
+            )
+        }, function done(err) {
+            if (err) {
+                console.log("An error occurred")
+            } else {
+                console.log("Done", JSON.stringify(wanData));
+                ee.emit("WANStats", wanData);
+            }
+        });
+}
+
+
+function periodicCubePull() {
     setInterval(function () {
         getCubeSensorCurrentData()
     }, 60000);
 }
 
+function periodicWANReceivePull() {
+    setInterval(function () {
+        getWanStats()
+    }, 5000);
+}
+
 getCubeSensorInfo();
-periodicPull();
+periodicWANReceivePull();
+//periodicWANReceivePull();
 
 //getCurrentData();
 //getSpanData();

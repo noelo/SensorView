@@ -19,12 +19,19 @@ var oauth = new OAuth.OAuth(
     'HMAC-SHA1'
 );
 
+var oauth_tokens = {
+    consumer_key: process.env.oauth_consumer_key,
+    consumer_secret: process.env.oauth_consumer_secret,
+    token: process.env.oauth_token,
+    token_secret: process.env.oauth_secret
+}, cubeDevices = [];
+
 var dbclient;
 var prevWANRecData = 0;
 var prevWANTransData = 0;
 
 ee.on("WANStats", function (WANData) {
-    var toStore = {rec:0,trans:0};
+    var toStore = {rec: 0, trans: 0};
 
     //Process receive data
     if (prevWANRecData !== 0) {
@@ -36,7 +43,7 @@ ee.on("WANStats", function (WANData) {
 
     //Process transmit data
     if (prevWANTransData !== 0) {
-        toStore.trans = WANData.transmit- prevWANTransData;
+        toStore.trans = WANData.transmit - prevWANTransData;
         toStore.trans = (toStore.trans > 0) ? toStore.trans : 0;
     }
     prevWANTransData = WANData.transmit;
@@ -97,12 +104,6 @@ ee.on("PrepDB", function () {
         });
 });
 
-var oauth_tokens = {
-    consumer_key: process.env.oauth_consumer_key,
-    consumer_secret: process.env.oauth_consumer_secret,
-    token: process.env.oauth_token,
-    token_secret: process.env.oauth_secret
-}, cubeDevices = [];
 
 function combineData(element, index) {
     this.out[this.field_lists[index]] = element;
@@ -233,9 +234,8 @@ function getWanStats() {
             )
         }, function done(err) {
             if (err) {
-                console.log("An error occurred")
+                console.log("An error occurred ", err)
             } else {
-                console.log("Done", JSON.stringify(wanData));
                 ee.emit("WANStats", wanData);
             }
         });
@@ -256,9 +256,6 @@ function periodicWANRPull() {
 
 getCubeSensorInfo();
 periodicWANRPull();
-//periodicWANReceivePull();
-
-//getCurrentData();
-//getSpanData();
+periodicCubePull();
 
 

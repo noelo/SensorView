@@ -54,27 +54,6 @@ ee.on("WANStats", function (WANData) {
     });
 });
 
-ee.on("WANReceive", function (WANData) {
-    var toStore = 0;
-    if (prevWANRecData !== 0) {
-        toStore = WANData - prevWANRecData;
-        toStore = (toStore > 0) ? toStore : 0;
-        prevWANRecData = WANData;
-    } else {
-        prevWANRecData = WANData;
-    }
-    dbclient.writeOne({
-        key: "NetworkData",
-        tags: {
-            router: "WANROUTER"
-        },
-        fields: {
-            receive: toStore,
-            source: "WAN"
-        }
-    });
-});
-
 ee.on("CurrentValue", function (sensorvalue) {
     console.log("Writing sensor data");
     dbclient.writeOne({
@@ -224,25 +203,6 @@ function getCubeSensorSpanData() {
 
 ee.emit("PrepDB");
 
-
-function getWanReceiveStats() {
-    var reqURL = "http://192.168.1.1/getWanReceive.sh";
-    request.get(reqURL, {
-            'auth': {
-                'user': 'admin',
-                'pass': 'admin',
-                'sendImmediately': true
-            }
-        }, function (err, response, body) {
-            if (!err && response.statusCode == 200) {
-                console.log("Received ", body);
-                ee.emit("WANReceive", Number(body.substring(0, body.length - 1)));
-            }
-        }
-    );
-    console.log("here before resp");
-}
-
 function getWanStats() {
     var wanData = {};
     var reqURLs = [
@@ -288,14 +248,14 @@ function periodicCubePull() {
     }, 60000);
 }
 
-function periodicWANReceivePull() {
+function periodicWANRPull() {
     setInterval(function () {
         getWanStats()
     }, 5000);
 }
 
 getCubeSensorInfo();
-periodicWANReceivePull();
+periodicWANRPull();
 //periodicWANReceivePull();
 
 //getCurrentData();

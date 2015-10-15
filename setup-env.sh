@@ -1,5 +1,5 @@
-export EXTERNAL_INFLUXDB_SVC_HOST=
-export EXTERNAL_INFLUXDB_SVC_PORT=
+export EXTERNAL_INFLUXDB_SVC_SERVICE_HOST=
+export EXTERNAL_INFLUXDB_SVC_SERVICE_PORT=
 export dbusername=admin
 export dbpassword=admin
 export oauth_consumer_key=

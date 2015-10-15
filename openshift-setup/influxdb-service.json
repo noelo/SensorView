@@ -1,0 +1,19 @@
+{
+  "kind": "Service",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "external-influxdb-svc"
+  },
+  "spec": {
+    "ports": [
+      {
+        "name": "influxdb",
+        "protocol": "TCP",
+        "port": 8086,
+        "targetPort": 8086,
+        "nodePort": 0
+      }
+    ]
+  },
+  "selector": {}
+}

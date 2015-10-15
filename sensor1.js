@@ -101,8 +101,8 @@ ee.on("PrepDB", function () {
             server: [
                 {
                     protocol: "http",
-                    host: process.env.dbhost,
-                    port: Number(process.env.dbport)
+                    host: process.env.EXTERNAL_INFLUXDB_SVC_HOST,
+                    port: Number(process.env.EXTERNAL_INFLUXDB_SVC_PORT)
                 }
             ]
         }).

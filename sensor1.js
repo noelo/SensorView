@@ -58,8 +58,12 @@ ee.on("WANStats", function (WANData) {
             transmit: toStore.trans,
             source: "WAN"
         }
-    });
+    }).then().catch(
+        function (reason) {
+            console.log('WANStats Failed to write to DB (' + reason + ') here.');
+        });
 });
+
 
 ee.on("CurrentValue", function (sensorvalue) {
     console.log("Writing sensor data");
@@ -76,7 +80,10 @@ ee.on("CurrentValue", function (sensorvalue) {
             noise: sensorvalue.noisedba,
             source: "CubeSensor"
         }
-    });
+    }).then().catch(
+        function (reason) {
+            console.log('CurrentValue Failed to write to DB (' + reason + ') here.');
+        });
 });
 
 ee.on("SpanValue", function (sensorvalue) {
@@ -126,7 +133,7 @@ function getCubeSensorInfo() {
                 console.log("CubeName", cube.extra.name);
             })
         } else {
-            console.error("getCubeSensorInfo ",error, response);
+            console.error("getCubeSensorInfo ", error, response);
         }
     });
 }
@@ -142,7 +149,7 @@ function getCubeSensorCurrentData() {
                 json: true
             }, function (error, response, body) {
                 if (error) {
-                    console.error("getCubeSensorCurrentData ",error, response);
+                    console.error("getCubeSensorCurrentData ", error, response);
                 } else {
                     switch (response.statusCode) {
                         case 200:
@@ -226,9 +233,8 @@ function getWanStats() {
                     }
                 }, function (err, response, body) {
                     if (!err && response.statusCode == 200) {
-                        console.log(body)
                         wanData[url.type] = Number(body.substring(0, body.length - 1));
-                    }else{
+                    } else {
                         console.log("getWanStats: An error occurred during GET ", err)
 
                     }

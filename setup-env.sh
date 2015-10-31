@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 export EXTERNAL_INFLUXDB_SVC_SERVICE_HOST=
 export EXTERNAL_INFLUXDB_SVC_SERVICE_PORT=
 export dbusername=admin

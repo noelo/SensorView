@@ -5,6 +5,23 @@ var request = require("request");
 var events = require('events');
 var influent = require('influent');
 var async = require("async");
+var express = require('express');
+var app = express();
+
+
+var processing_status = 200;
+
+
+app.get('/', function (req, res) {
+    res.sendStatus(processing_status);
+});
+
+var server = app.listen(3000, function () {
+    var host = server.address().address;
+    var port = server.address().port;
+
+    console.log('App status listening at http://%s:%s', host, port);
+});
 
 
 var ee = new events.EventEmitter();
@@ -58,9 +75,12 @@ ee.on("WANStats", function (WANData) {
             transmit: toStore.trans,
             source: "WAN"
         }
-    }).then().catch(
+    }).then(function () {
+        processing_status = 200;
+    }).catch(
         function (reason) {
             console.log('WANStats Failed to write to DB (' + reason + ') here.');
+            processing_status = 500;
         });
 });
 
@@ -80,11 +100,17 @@ ee.on("CurrentValue", function (sensorvalue) {
             noise: sensorvalue.noisedba,
             source: "CubeSensor"
         }
-    }).then().catch(
+    }).then(function () {
+
+            processing_status = 200;
+        }
+    ).catch(
         function (reason) {
             console.log('CurrentValue Failed to write to DB (' + reason + ') here.');
+            processing_status = 500;
         });
-});
+})
+;
 
 ee.on("SpanValue", function (sensorvalue) {
     console.log("SpanValue", sensorvalue);
@@ -108,6 +134,10 @@ ee.on("PrepDB", function () {
         }).
         then(function (client) {
             dbclient = client;
+        }).catch(
+        function (reason) {
+            console.log('Failed to get influxdb client', reason);
+            processing_status = 500;
         });
 });
 
@@ -126,6 +156,7 @@ function getCubeSensorInfo() {
         json: true
     }, function (error, response, body) {
         if (!error && response.statusCode == 200) {
+            processing_status = 200;
             console.log(body);
             body.devices.forEach(function (cube) {
                 cubeDevices.push({"cubeid": cube.uid, "cubename": cube.extra.name});
@@ -134,6 +165,7 @@ function getCubeSensorInfo() {
             })
         } else {
             console.error("getCubeSensorInfo ", error, response);
+            processing_status = 500;
         }
     });
 }
@@ -150,9 +182,11 @@ function getCubeSensorCurrentData() {
             }, function (error, response, body) {
                 if (error) {
                     console.error("getCubeSensorCurrentData ", error, response);
+                    processing_status = 500;
                 } else {
                     switch (response.statusCode) {
                         case 200:
+                            processing_status = 200;
                             var tmp = {};
                             tmp.field_lists = body.field_list;
                             tmp.out = {};
@@ -163,6 +197,7 @@ function getCubeSensorCurrentData() {
                             ee.emit("CurrentValue", tmp.out);
                             break;
                         case 429:
+                            processing_status = 200;
                             console.log("Rate limited...");
                             break;
                         default:
@@ -195,6 +230,7 @@ function getCubeSensorSpanData() {
             json: true
         }, function (err, response, body) {
             if (!err && response.statusCode == 200) {
+                processing_status = 200;
                 var tmp = {};
                 tmp.field_lists = body.field_list;
                 tmp.out = {};
@@ -244,7 +280,9 @@ function getWanStats() {
         }, function done(err) {
             if (err) {
                 console.log("getWanStats: An error occurred ", err);
+                processing_status = 500;
             } else {
+                processing_status = 200;
                 ee.emit("WANStats", wanData);
             }
         });
